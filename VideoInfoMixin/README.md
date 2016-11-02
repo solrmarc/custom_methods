@@ -2,10 +2,11 @@ Defines several methods that extract useful data from MARC records for Video ite
 
 getVideoDirector
 
-     Attempt to heuristically determine the Director of a video item based on looking in 
-     the 245c, subfield, the 508a subfield and 700 fields.   Applies many, many patterns looking to 
-     extract the "director" of a video, while also avoiding instances "director of photography"
-     The test directory contains a files of test cases for which this routine will work.
+     Attempt to heuristically determine the director of a video item based on looking in 
+     the 245c, subfield, the 508a subfield and 700 fields.   It applies many, many patterns looking to 
+     extract the director (or directors) of a video, while also avoiding instances like "director of photography"
+     
+     The test directory contains a file of test cases for which this routine will work.
      The test data consists of the correct director name (or names) followed by the string extracted 
      from an actual MARC record data field.   Note the test data includes cases where the word director
      is in another language or is missing entirely.
