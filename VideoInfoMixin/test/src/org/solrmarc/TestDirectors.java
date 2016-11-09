@@ -13,7 +13,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.junit.Test;
-import org.solrmarc.index.VideoInfoMixin;
+import org.solrmarc.mixin.VideoInfoMixin;
 
 
 public class TestDirectors
