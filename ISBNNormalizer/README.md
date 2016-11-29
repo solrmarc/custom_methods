@@ -19,7 +19,7 @@ filterISBN(Collection<String>ISBNs, String whatToReturn)
     return the other valid form.
 
     returns a String extracted from the provided file, associated with the 001 field of the current record.
-    e.g.  value = 020a, custom_map(org.solrmarc.mixin.ISBNNormalizer), filterISBN(10), unique
-    or    value = 020a, custom_map(org.solrmarc.mixin.ISBNNormalizer), filterISBN(13), unique
-    or    value = 020a, custom_map(org.solrmarc.mixin.ISBNNormalizer), filterISBN(both), unique
+    e.g.  value = 020a, custom_map(org.solrmarc.mixin.ISBNNormalizer, filterISBN(10)), unique
+    or    value = 020a, custom_map(org.solrmarc.mixin.ISBNNormalizer, filterISBN(13)), unique
+    or    value = 020a, custom_map(org.solrmarc.mixin.ISBNNormalizer, filterISBN(both)), unique
     
