@@ -46,11 +46,11 @@ The next set of methods can be applied after one of the above in the instance wh
 for a key actually consists of multiple values like the following, which lists the date an item was recieved
 by the library, and the internal funding code(s) that were used to pay for the item
 
-u4851188|20111219|ART-M
-u4853449|20131101|MUSI-M:UL-POSTAGE
-u4855673|20140325|SAS-YY00196
-u4856068|20131014|PARRISH-ER00600
-u4874816|20121024|CL-RESERVES
+    u4851188|20111219|ART-M
+    u4853449|20131101|MUSI-M:UL-POSTAGE
+    u4855673|20140325|SAS-YY00196
+    u4856068|20131014|PARRISH-ER00600
+    u4874816|20121024|CL-RESERVES
 
 mapLookupSelect(Collection<String> values, String sepPattern, String select)
     
