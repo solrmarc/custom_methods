@@ -46,12 +46,12 @@ public class SolrRecordLookupMixin extends SolrIndexerMixin
      *   all subsequent index specifications for that record. 
      */
     Map<String, SolrDocumentList> resultMap = null;
-    
+
     public SolrRecordLookupMixin()
     {
         serverMap = new LinkedHashMap<String, SolrProxy>();
     }
-    
+
     /**
      * perRecordInit - Called once per record before any index specifications are processed.
      * This method merely makes sure the resultMap of records returned for searches based on a given record
@@ -81,7 +81,7 @@ public class SolrRecordLookupMixin extends SolrIndexerMixin
             if (vf instanceof DataField)
             {
                 DataField df = (DataField)vf;
-                List<Subfield> sfl = ((DataField)vf).getSubfields(fieldspec.substring(3));
+                List<Subfield> sfl = df.getSubfields(fieldspec.substring(3));
                 for (Subfield sf : sfl)
                 {
                     String dataVal = sf.getData();
@@ -124,15 +124,15 @@ public class SolrRecordLookupMixin extends SolrIndexerMixin
             }
         }
         if (!first) sb.append(")");
-        
+
         //if the record that was passed in contained no fields matching the fieldspec return null as the query string
         if (sb.length() == 0) return(null);
-        
+
         String parameterizedQuery = prefixStr + ":" + sb.toString();
         return(parameterizedQuery);
     }
-    
-    
+
+
     /**
      * getServerForURL - returns the SolrServer object to use to communicate
      * to a Solr server at the provided URL.  Caches the SolrServer object in a map 
@@ -152,20 +152,12 @@ public class SolrRecordLookupMixin extends SolrIndexerMixin
         }
         else
         {
-//            try
-//            {
-                server = SolrCoreLoader.loadRemoteSolrServer(solrUrl, null, true);
-                serverMap.put(solrUrl, server);
-//            }
-//            catch (MalformedURLException e)
-//            {
-//                // TODO Auto-generated catch block
-//                e.printStackTrace();
-//            }
+            server = SolrCoreLoader.loadRemoteSolrServer(solrUrl, null, true);
+            serverMap.put(solrUrl, server);
         }      
         return(server);
     }
-    
+
 
     /**
      * getSolrDocumentsForQuery - Retrieve the set of documents from the separate solr index 
@@ -206,9 +198,8 @@ public class SolrRecordLookupMixin extends SolrIndexerMixin
             }
         }
         return(sdl);
-
     }
-    
+
     /**
      * fillResultSetFromSolrDocs - Traverse over the SolrDocumentList returned for the current query
      * and select fields that match the parameter  fieldToFetch.
@@ -244,7 +235,7 @@ public class SolrRecordLookupMixin extends SolrIndexerMixin
         return(result);
     }
 
-    
+
     /**
      * getExtraSolrDataByQuery - An actual custom indexing function call-able by SolrMarc.
      * The index specification provides the URL of the Solr server (including the core name)
@@ -254,9 +245,9 @@ public class SolrRecordLookupMixin extends SolrIndexerMixin
      * in building the query.
      * 
      * For example the index specification:  
-     *     
+     *
      *     getExtraSolrDataByQuery(http://myserver.company.com:8080/solr/core, "020az", isbn_text, "([- 0-9]*[0-9Xx]).*=>$1", "[- ]", "([0-9]{9}[0-9Xx])|([0-9]{13})", summary_display)
-     *     
+     *
      * will build a query consisting of the contents of the 020a subfields and the 020z subfields of the current record (which is usually an ISBN) 
      * it will then clean up the data to use numeric-only values that look like an ISBN to build the query to send to the solr server at "http://myserver.company.com:8080/solr/core" and return 
      * all occurrences of the "summary_display" field from the returned record(s).
@@ -280,17 +271,94 @@ public class SolrRecordLookupMixin extends SolrIndexerMixin
     {
         // Get the possibly cached SolrServer object to use
         SolrProxy server = getServerForURL(solrUrl);
-        
+
         String queryStr = buildQueryString(record, fieldspec, prefixStr, selectionPattern, cleanUpPattern, mustMatch);
         if (queryStr == null) return (new ArrayList<String>());
-        
+
         SolrDocumentList sdl = getSolrDocumentsForQuery(server, queryStr);
-        
+
         List<String> result = fillResultSetFromSolrDocs(sdl, fieldToFetch, true);
 
         return(result);
     }
-    
+
+
+    /**
+     * getExtraSolrDataByQuery - An actual custom indexing function call-able by SolrMarc.
+     * The index specification provides the URL of the Solr server (including the core name)
+     * that contains the desired data, and the name of the field within that indexed data to return 
+     * for the current index specification.  It also provides the fieldspec to use to extract data from 
+     * the current in constructing the query against that solr index, and the field prefix string to use 
+     * in building the query.
+     * 
+     * For example the index specification:  
+     *
+     *     getExtraSolrDataByQuery(http://myserver.company.com:8080/solr/core, "020az", isbn_text, summary_display)
+     *
+     * will build a query consisting of the contents of the 020a subfields and the 020z subfields of the current record (which is usually an ISBN) 
+     * it will then build the query to send to the solr server at "http://myserver.company.com:8080/solr/core" and return 
+     * all occurrences of the "summary_display" field from the returned record(s).
+     * 
+     * @param record - The MARC record being indexed.
+     * @param solrUrl - The URL of the Solr server containing the data to be looked up.
+     * @param fieldspec - the field (or field/subfield) to extract from the current record to build the query against the solr index 
+     * @param prefixStr - the query prefix to use with the above extracted data to  build the query against the solr index
+     * @param fieldToFetch - the Field in the returned solr response from which to extract one or more items of data to return.
+     * @return
+     */
+    public List<String> getExtraSolrDataByQuery(final Record record, String solrUrl, String fieldspec, String prefixStr, String fieldToFetch)
+    {
+        return getExtraSolrDataByQuery(record, solrUrl, fieldspec, prefixStr, null, null, null, fieldToFetch);
+    }
+
+
+    /**
+     * getExtraSolrDataByISBN - An actual custom indexing function call-able by SolrMarc.
+     * The index specification provides the URL of the Solr server (including the core name)
+     * that contains the desired data, and the name of the field within that data to return 
+     * for the current index specification.
+     * 
+     * For example the index specification:  
+     *     getExtraSolrDataByISBN(http://myserver.company.com:8080/solr/core, summary_display)
+     * it will extract all 020a and z subfields, filter the ISBNs to only include valid-looking numeric strings
+     * and build a query using the filtered strings like isbn_text:(isbn1 OR isbn2) 
+     * and send that query to send to the solr server at "http://myserver.company.com:8080/solr/core" 
+     * and return all occurrences of the summary_display field from the record(s) returned.
+     * 
+     * @param record - The MARC record being indexed.
+     * @param solrUrl - The URL of the Solr server containing the data to be looked up.
+     * @param fieldspec - the field (or field/subfield) to extract from the current record to build the query against the solr index 
+     * @param prefixStr - the query prefix to use with the above extracted data to  build the query against the solr index
+     * @param fieldToFetch - the Field in the returned solr response from which to extract one or more items of data to return.     * @return
+     */
+    public List<String> getExtraSolrDataByISBN(final Record record, String solrUrl, String fieldspec, String prefixStr, String fieldToFetch)
+    {
+        return getExtraSolrDataByQuery(record, solrUrl, fieldspec, prefixStr, "([- 0-9]*[0-9Xx]).*=>$1", "[- ]", "([0-9]{9}[0-9Xx])|([0-9]{13})", fieldToFetch);
+    }
+
+    /**
+     * getExtraSolrDataByISBN - An actual custom indexing function call-able by SolrMarc.
+     * The index specification provides the URL of the Solr server (including the core name)
+     * that contains the desired data, and the name of the field within that data to return 
+     * for the current index specification.
+     *
+     * For example the index specification:  
+     *     getExtraSolrDataByISBN(http://myserver.company.com:8080/solr/core, summary_display)
+     * it will extract all 020a and z subfields, and build a query like isbn_text:(isbn1 OR isbn2) 
+     * and send that query to send to the solr server at "http://myserver.company.com:8080/solr/core" 
+     * and return all occurrences of the summary_display field from the record(s) returned.
+     * 
+     * @param record - The MARC record being indexed.
+     * @param solrUrl - The URL of the Solr server containing the data to be looked up.
+     * @param fieldToFetch
+     * @return
+     */
+    public List<String> getExtraSolrDataByISBN(final Record record, String solrUrl, String fieldToFetch)
+    {
+        return getExtraSolrDataByQuery(record, solrUrl, "020az", "isbn_text", fieldToFetch);
+    }
+
+
     /**
      * getExtraSolrDataByID - An actual custom indexing function call-able by SolrMarc.
      * The index specification provides the URL of the Solr server (including the core name)
@@ -304,7 +372,7 @@ public class SolrRecordLookupMixin extends SolrIndexerMixin
      * will build a query consisting of the contents of the 001 field of the current record (which is the unique identifier) 
      * it will then send that query to the solr server at "http://myserver.company.com:8080/solr/core" and return 
      * all occurrences of the "summary_display" field from the returned record(s).    
-     *  
+     *
      * @param record - The MARC record being indexed.
      * @param solrUrl - The URL of the Solr server containing the data to be looked up.
      * @param fieldspec - the field (or field/subfield) to extract from the current record to build the query against the solr index 
@@ -314,9 +382,10 @@ public class SolrRecordLookupMixin extends SolrIndexerMixin
      */
     public List<String> getExtraSolrDataByID(final Record record, String solrUrl, String fieldspec, String prefixStr, String fieldToFetch)
     {
-        return getExtraSolrDataByQuery(record, solrUrl, fieldspec, prefixStr, null, null, null, fieldToFetch);
-    } 
-    
+        return getExtraSolrDataByQuery(record, solrUrl, fieldspec, prefixStr, fieldToFetch);
+    }
+
+
     /**
      * getExtraSolrDataByID - An actual custom indexing function call-able by SolrMarc.
      * The index specification provides the URL of the Solr server (including the core name)
@@ -341,8 +410,9 @@ public class SolrRecordLookupMixin extends SolrIndexerMixin
     public List<String> getExtraSolrDataByID(final Record record, String solrUrl, String fieldToFetch)
     {
         return getExtraSolrDataByID(record, solrUrl, "001", "id", fieldToFetch);
-    } 
-    
+    }
+
+
     /**
      * skipIfDataExists - An actual custom indexing function call-able by SolrMarc.
      * This method calls getExtraSolrDataByID and if that method would NOT return any data, this method whould similarly not return any data.
@@ -361,9 +431,9 @@ public class SolrRecordLookupMixin extends SolrIndexerMixin
      * @return
      */
     public List<String> skipIfDataExists(final Record record, String solrUrl, String fieldspec, String prefixStr, String fieldToFetch)
-    {     
+    {
         List<String> result = getExtraSolrDataByID(record, solrUrl, fieldspec, prefixStr, fieldToFetch);
-        
+
         if (result.isEmpty()) 
         {
             return(result);
@@ -371,7 +441,8 @@ public class SolrRecordLookupMixin extends SolrIndexerMixin
 
         throw new SolrMarcIndexerException(SolrMarcIndexerException.IGNORE);
     }
-    
+
+
     /**
      * skipIfDataExists - An actual custom indexing function call-able by SolrMarc.
      * This method calls getExtraSolrDataByID and if that method would NOT return any data, this method whould similarly not return any data.
@@ -388,14 +459,14 @@ public class SolrRecordLookupMixin extends SolrIndexerMixin
      * @return
      */
     public List<String> skipIfDataExists(final Record record, String solrUrl, String fieldToFetch)
-    {     
+    {
         List<String> result = getExtraSolrDataByID(record, solrUrl, "001", "id", fieldToFetch);
-        
+
         if (result.isEmpty()) 
         {
             return(result);
         }
 
         throw new SolrMarcIndexerException(SolrMarcIndexerException.IGNORE);
-    }    
+    }
 }
