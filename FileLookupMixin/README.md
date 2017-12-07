@@ -30,6 +30,7 @@ getFromFileBy001(Record record, String filename, String defaultValue)
                   getFromFileBy001(extra_data/new_recs_dates_sorted.txt, 20101201)
     
 
+
 mapFromFileByKey(Collection<String>keys, String filename, String separatorPattern, String defaultValue) 
 
     A custom mapping method.
@@ -39,7 +40,10 @@ mapFromFileByKey(Collection<String>keys, String filename, String separatorPatter
     supplied defaultValue
 
          value = 020a, custom_map(org.solrmarc.mixin.FileLookupMixin, 
-                        getFromFileByKey(extra_data/new_recs_dates_sorted.txt, ""))
+                        mapFromFileByKey(extra_data/new_recs_dates_sorted.txt, "\t", ""))
+         OR
+         
+         value = 020a, mapFromFileByKey(extra_data/new_recs_dates_sorted.txt, "\t", "")
   
   
 The next set of methods can be applied after one of the above in the instance where the data returned 
@@ -64,6 +68,11 @@ mapLookupSelect(Collection<String> values, String sepPattern, String select)
    
         date_received = custom, getFromFileBy001("extra_data/booklists_all_20161128.txt", "[|]", null), 
                                custom_map(mapLookupSelect("[|]",0))
+        
+        OR
+        
+        date_received = getFromFileBy001("extra_data/booklists_all_20161128.txt", "[|]", null), 
+                               mapLookupSelect("[|]",0)
 
 
 mapLookupSplit(Collection<String> values, String sepPattern)
@@ -80,6 +89,12 @@ mapLookupSplit(Collection<String> values, String sepPattern)
         date_received = custom, getFromFileBy001("extra_data/booklists_all_20161128.txt", "[|]", null), 
                                custom_map(mapLookupSelect("[|]",1)), 
                                custom_map(mapLookupSplit(":"))
+        
+        OR
+        
+        date_received = getFromFileBy001("extra_data/booklists_all_20161128.txt", "[|]", null), 
+                               mapLookupSelect("[|]",1), mapLookupSplit(":")
+        
 
 
 For the last two methods the expected format of the file is for each line of the external data file 
@@ -99,6 +114,11 @@ getFromFileKeyExists(Record record, String filename, String exists, String notEx
 
           shadowed_facet = custom(org.solrmarc.mixin.FileLookupMixin), 
                   getFromFileKeyExists(extra_data/shadowedids.txt, "HIDDEN", "VISIBLE")
+          
+          OR
+       
+          shadowed_facet = getFromFileKeyExists(extra_data/AllShadowedIds.txt, "VISIBLE", "HIDDEN")
+ 
                   
 mapFromFileKeyExists(Collection<String> keys, String filename, String exists, String notExists)
 
@@ -110,6 +130,4 @@ mapFromFileKeyExists(Collection<String> keys, String filename, String exists, St
     is set to the empty string "", the method will return no value for the extractor.   
     (If they are both set to "", you will merely waste time)
    
-        date_received = custom, getFromFileBy001("extra_data/booklists_all_20161128.txt", "[|]", null), 
-                               custom_map(mapLookupSelect("[|]",1)), 
-                               custom_map(mapLookupSplit(":"))
+        No example yet
