@@ -13,7 +13,12 @@ getVideoDirector
      
      returns zero or more director's names for the video, with duplicates removed.
      e.g.  directors = custom(org.solrmarc.mixin.VideoInfoMixin), getVideoDirector
-     
+
+Note: the Code for the getVideoDirector method and several helper methods it relies on contain 
+accented characters and therefore you MUST specify UTF-8 when compiling it.   If you are merely 
+including it in the index_java/src directory of a SolrMarc installation for the code to be dynamically 
+compiled, the corrct setting will be used, but if you are including this code in another project, 
+unless you specify that the source file in UTF-8 errors will result.
      
 Note: the rest of these custom methods can be replaced with a new-style "simple" index specification, 
 possibly with a complex translation map.
