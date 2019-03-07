@@ -24,17 +24,17 @@ public class JoinFieldsMixin extends SolrIndexerMixin {
 
     public List<String> getSimpleJoinedFields(final Record record, String firstFieldSpec, String secondFieldSpec, String separator)
     {
-                List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<String>();
         List<VariableField> firstFields = record.getVariableFields(firstFieldSpec.substring(0, 3));
         List<VariableField> secondFields = record.getVariableFields(secondFieldSpec.substring(0, 3));
         ArrayList<Subfield> firstSubfields = getSubfieldsMatching(firstFields, firstFieldSpec.substring(3));
         ArrayList<Subfield> secondSubfields = getSubfieldsMatching(secondFields, secondFieldSpec.substring(3));
-                int i;
-                for (i = 0; i < firstSubfields.size() && i < secondSubfields.size(); i++)
-                {
-                    String resultStr = firstSubfields.get(i).getData() + separator + secondSubfields.get(i).getData();
-                    result.add(resultStr);
-                }
+        int i;
+        for (i = 0; i < firstSubfields.size() && i < secondSubfields.size(); i++)
+        {
+            String resultStr = firstSubfields.get(i).getData() + separator + secondSubfields.get(i).getData();
+            result.add(resultStr);
+        }
         for (; i < firstSubfields.size(); i++)
         {
             String resultStr = firstSubfields.get(i).getData();
@@ -45,7 +45,7 @@ public class JoinFieldsMixin extends SolrIndexerMixin {
             String resultStr = secondSubfields.get(i).getData();
             result.add(resultStr);
         }
-                return result;
+        return result;
     }
 
     public List<String> getComplexJoinedFields(final Record record, String firstFieldSpec, String secondFieldSpec, String separator) throws Exception
@@ -75,20 +75,19 @@ public class JoinFieldsMixin extends SolrIndexerMixin {
             String resultStr = secondData.get(i);
             result.add(resultStr);
         }
-
         return(result);
     }
 
     private ArrayList<Subfield> getSubfieldsMatching(List<VariableField> fields, String subfieldCodes)
     {
-            ArrayList<Subfield> subfields = new ArrayList<Subfield>();
-            for (VariableField vf : fields)
-            {
-                if (!(vf instanceof DataField)) return(subfields);
-                DataField df = (DataField)vf;
-                subfields.addAll(df.getSubfields(subfieldCodes));
-            }
-            return(subfields);
+        ArrayList<Subfield> subfields = new ArrayList<Subfield>();
+        for (VariableField vf : fields)
+        {
+            if (!(vf instanceof DataField)) return(subfields);
+            DataField df = (DataField)vf;
+            subfields.addAll(df.getSubfields(subfieldCodes));
+        }
+        return(subfields);
     }
 
     private AbstractValueIndexer<?> getOrCreateIndexerFullSpec(String fullSpec)
@@ -108,5 +107,4 @@ public class JoinFieldsMixin extends SolrIndexerMixin {
             return(indexer);
         }
     }
-
 }
